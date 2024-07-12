@@ -6,6 +6,7 @@ import {
   FormLabel,
   Heading,
   Input,
+  Link,
   Table,
   Tbody,
   Td,
@@ -33,7 +34,7 @@ function Dashboard() {
 
   const searchRequests = requests?.filter((el) => {
     if (search) {
-      return el.config.method.includes(search.toLowerCase());
+      return el?.config?.url?.toLowerCase().includes(search.toLowerCase());
     } else {
       return requests;
     }
@@ -44,7 +45,8 @@ function Dashboard() {
       return true;
     }
 
-    const contentType = el.headers["content-type"];
+    const contentType = el.headers && el.headers["content-type"];
+
     if (contentType) {
       switch (filter) {
         case "application/json":
@@ -79,6 +81,8 @@ function Dashboard() {
     }
   });
 
+  console.log("requests", requests);
+
   return (
     <Box
       h={"100vh"}
@@ -90,8 +94,13 @@ function Dashboard() {
     >
       {/* box first which take url */}
       <Box w={"40%"} h={"100vh"} p={"50px"}>
-        <ApiInputForm />
+        <Box p={"20px"} border={"1px solid #718096"} borderRadius={"10px"}>
+          <Heading color={"orange"} fontFamily={"serif"}>
+            Chrome DevTools
+          </Heading>
+        </Box>
       </Box>
+
       {/* box second which is network box */}
       <Box w={"60%"} h={"100vh"} boxShadow={"md"} border={"1px solid #718096"}>
         {/* heading box */}
@@ -107,6 +116,10 @@ function Dashboard() {
             <Text color={"blue.200"}>Network</Text>
           </Box>
           <Box></Box>
+        </Box>
+
+        <Box>
+          <ApiInputForm />
         </Box>
 
         <Box
@@ -202,7 +215,7 @@ function Dashboard() {
             <Box>
               <Input
                 h={"20px"}
-                placeholder="Filter method"
+                placeholder="Filter url"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -355,49 +368,59 @@ function Dashboard() {
         </Box>
 
         {/* request showing */}
-        <Box overflowX="auto" maxH="calc(100vh - 130px)">
-          <Table size="sm">
-            <Thead>
-              <Tr>
-                <Th color={"white"}>Method</Th>
-                <Th color={"white"}>URL</Th>
-                <Th color={"white"}>Type</Th>
-                <Th color={"white"}>Status</Th>
-                <Th color={"white"}>Duration</Th>
-                <Th color={"white"}>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filterRequests &&
-                filterRequests?.map((request, index) => (
-                  <Tr key={index}>
-                    <Td fontSize={"12px"}>
-                      {request?.config?.method?.toUpperCase()}
-                    </Td>
-                    <Td maxW={"400px"} fontSize={"12px"}>
-                      {request?.config?.url}
-                    </Td>
-                    <Td fontSize={"12px"}>{request.type}</Td>
-                    <Td fontSize={"12px"}>{request?.status}</Td>
-                    <Td fontSize={"12px"}>{request?.duration} ms</Td>
-                    <Td
-                      fontSize={"12px"}
-                      onClick={() => setSelectRequest(request)}
-                      cursor={"pointer"}
-                    >
-                      Details
-                    </Td>
-                  </Tr>
-                ))}
-            </Tbody>
-          </Table>
-          {selectRequest && (
-            <RequestDetailsModal
-              request={selectRequest}
-              onClose={() => setSelectRequest(null)}
-            />
-          )}
-        </Box>
+        {requests.length == 0 ? (
+          <Box h={"300px"} position={"relative"}>
+            <Box position={"absolute"} top={"80%"} left={"30%"}>
+              <Text>Recording network activity.....</Text>
+              <Text>Perform a request or hit Ctrl+R to record the reload.</Text>
+              <Link color={"blue"}>Learn More</Link>
+            </Box>
+          </Box>
+        ) : (
+          <Box overflowX="auto" maxH="calc(100vh - 175px)">
+            <Table size="sm">
+              <Thead>
+                <Tr>
+                  <Th color={"white"}>Method</Th>
+                  <Th color={"white"}>URL</Th>
+                  <Th color={"white"}>Type</Th>
+                  <Th color={"white"}>Status</Th>
+                  <Th color={"white"}>Duration</Th>
+                  <Th color={"white"}>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {filterRequests &&
+                  filterRequests?.map((request, index) => (
+                    <Tr key={index}>
+                      <Td fontSize={"12px"}>
+                        {request?.config?.method?.toUpperCase()}
+                      </Td>
+                      <Td maxW={"400px"} fontSize={"12px"}>
+                        {request?.config?.url}
+                      </Td>
+                      <Td fontSize={"12px"}>{request?.type}</Td>
+                      <Td fontSize={"12px"}>{request?.status}</Td>
+                      <Td fontSize={"12px"}>{request?.duration} ms</Td>
+                      <Td
+                        fontSize={"12px"}
+                        onClick={() => setSelectRequest(request)}
+                        cursor={"pointer"}
+                      >
+                        Details
+                      </Td>
+                    </Tr>
+                  ))}
+              </Tbody>
+            </Table>
+            {selectRequest && (
+              <RequestDetailsModal
+                request={selectRequest}
+                onClose={() => setSelectRequest(null)}
+              />
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   );

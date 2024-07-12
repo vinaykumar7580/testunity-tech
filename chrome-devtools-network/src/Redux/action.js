@@ -1,8 +1,9 @@
 import * as types from "./actionType";
 
 export const addRequest = (request) => {
+  console.log("requestheaders", request.headers);
   let type = "other";
-  if (request.headers["content-type"]) {
+  if (request.headers && request.headers["content-type"]) {
     const contentType = request.headers["content-type"];
     if (contentType.includes("application/json")) {
       type = "xhr";

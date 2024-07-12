@@ -20,7 +20,7 @@ export const setupInterceptors = (store) => {
     (error) => {
       const endTime = Date.now();
       const duration = endTime - error.config?.metadata?.startTime;
-      store.dispatch(addRequest({ ...error.response, duration }));
+      store.dispatch(addRequest({ ...error, duration, status: 500 }));
       return Promise.reject(error);
     }
   );
