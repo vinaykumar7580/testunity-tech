@@ -19,24 +19,65 @@ import { AiOutlineStop } from "react-icons/ai";
 import { IoIosSearch } from "react-icons/io";
 import { MdArrowDropDown, MdWifiPassword } from "react-icons/md";
 import { HiMiniArrowDownTray, HiMiniArrowUpTray } from "react-icons/hi2";
-import { useState } from "react";
 import { useSelector } from "react-redux";
-import axiosInstance from "../Components/interceptor";
+import ApiInputForm from "../Components/ApiInputForm";
+import { useState } from "react";
+import RequestDetailsModal from "../Components/RequestDetailsModal";
 
 function Dashboard() {
-  const [url, setUrl] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [selectRequest, setSelectRequest] = useState(null);
 
   const { requests } = useSelector((store) => store.reducer);
 
-  const handleSubmit = () => {
-    if (url) {
-      axiosInstance.get(url);
+  const searchRequests = requests?.filter((el) => {
+    if (search) {
+      return el.config.method.includes(search.toLowerCase());
+    } else {
+      return requests;
+    }
+  });
+
+  const filterRequests = searchRequests?.filter((el) => {
+    if (filter === "all") {
+      return true;
     }
 
-    setUrl("");
-  };
-
-  console.log("data", requests);
+    const contentType = el.headers["content-type"];
+    if (contentType) {
+      switch (filter) {
+        case "application/json":
+          return contentType.includes("application/json");
+        case "text/css":
+          return contentType.includes("text/css");
+        case "application/javascript":
+          return contentType.includes("application/javascript");
+        case "text/html":
+          return contentType.includes("text/html");
+        case "font":
+          return contentType.includes("font");
+        case "image":
+          return contentType.includes("image");
+        case "media":
+          return contentType.includes("media");
+        case "other":
+          return !(
+            contentType.includes("application/json") ||
+            contentType.includes("text/css") ||
+            contentType.includes("application/javascript") ||
+            contentType.includes("text/html") ||
+            contentType.includes("font") ||
+            contentType.includes("image") ||
+            contentType.includes("media")
+          );
+        default:
+          return true;
+      }
+    } else {
+      return filter === "other";
+    }
+  });
 
   return (
     <Box
@@ -49,32 +90,7 @@ function Dashboard() {
     >
       {/* box first which take url */}
       <Box w={"40%"} h={"100vh"} p={"50px"}>
-        <Box p={"20px"} border={"1px solid #718096"} borderRadius={"10px"}>
-          <Heading color={"orange"} fontFamily={"serif"}>
-            Chrome DevTools
-          </Heading>
-          <Box mt={"30px"}>
-            <FormControl>
-              <FormLabel>Web URLs</FormLabel>
-              <Input
-                type="email"
-                placeholder="Enter web url's"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </FormControl>
-            <Box
-              mt={"20px"}
-              display={"flex"}
-              justifyContent={"flex-end"}
-              alignItems={"center"}
-            >
-              <Button colorScheme="purple" onClick={handleSubmit}>
-                Submit
-              </Button>
-            </Box>
-          </Box>
-        </Box>
+        <ApiInputForm />
       </Box>
       {/* box second which is network box */}
       <Box w={"60%"} h={"100vh"} boxShadow={"md"} border={"1px solid #718096"}>
@@ -184,7 +200,12 @@ function Dashboard() {
             gap={"15px"}
           >
             <Box>
-              <Input h={"20px"} placeholder="Filter" />
+              <Input
+                h={"20px"}
+                placeholder="Filter method"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </Box>
             <Box>
               <Checkbox size="md">Invert</Checkbox>
@@ -226,6 +247,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "all" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("all")}
             >
               All
             </Box>
@@ -234,6 +258,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "application/json" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("application/json")}
             >
               Fetch/XHR
             </Box>
@@ -241,6 +268,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "text/html" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("text/html")}
             >
               Doc
             </Box>
@@ -248,6 +278,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "text/css" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("text/css")}
             >
               CSS
             </Box>
@@ -255,6 +288,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "application/javascript" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("application/javascript")}
             >
               JS
             </Box>
@@ -262,6 +298,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "font" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("font")}
             >
               Font
             </Box>
@@ -269,6 +308,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "image" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("image")}
             >
               Img
             </Box>
@@ -276,6 +318,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "media" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("media")}
             >
               Media
             </Box>
@@ -283,6 +328,9 @@ function Dashboard() {
               border={"1px solid #718096"}
               p={"0px 7px"}
               borderRadius={"5px"}
+              bg={filter == "other" ? "gray.500" : ""}
+              cursor={"pointer"}
+              onClick={() => setFilter("other")}
             >
               Other
             </Box>
@@ -307,9 +355,8 @@ function Dashboard() {
         </Box>
 
         {/* request showing */}
-        <Box overflowX="auto"
-          maxH="calc(100vh - 130px)">
-          <Table size='sm'>
+        <Box overflowX="auto" maxH="calc(100vh - 130px)">
+          <Table size="sm">
             <Thead>
               <Tr>
                 <Th color={"white"}>Method</Th>
@@ -321,19 +368,35 @@ function Dashboard() {
               </Tr>
             </Thead>
             <Tbody>
-              {requests &&
-                requests?.map((request, index) => (
-                  <Tr key={index} >
-                    <Td fontSize={"12px"}>{request?.config?.method?.toUpperCase()}</Td>
-                    <Td maxW={"400px"} fontSize={"12px"}>{request?.config?.url}</Td>
+              {filterRequests &&
+                filterRequests?.map((request, index) => (
+                  <Tr key={index}>
+                    <Td fontSize={"12px"}>
+                      {request?.config?.method?.toUpperCase()}
+                    </Td>
+                    <Td maxW={"400px"} fontSize={"12px"}>
+                      {request?.config?.url}
+                    </Td>
                     <Td fontSize={"12px"}>{request.type}</Td>
                     <Td fontSize={"12px"}>{request?.status}</Td>
                     <Td fontSize={"12px"}>{request?.duration} ms</Td>
-                    <Td fontSize={"12px"}>Details</Td>
+                    <Td
+                      fontSize={"12px"}
+                      onClick={() => setSelectRequest(request)}
+                      cursor={"pointer"}
+                    >
+                      Details
+                    </Td>
                   </Tr>
                 ))}
             </Tbody>
           </Table>
+          {selectRequest && (
+            <RequestDetailsModal
+              request={selectRequest}
+              onClose={() => setSelectRequest(null)}
+            />
+          )}
         </Box>
       </Box>
     </Box>
